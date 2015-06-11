@@ -23,7 +23,7 @@ class ewf_Img_Info(pytsk3.Img_Info):
     self._ewf_handle.close()
 
   def read(self, offset, size):
-    self._ewf_handle.seek(offset)
+    self._ewf_handle.seek(offset)DD88F-9AB33-93703-9924A-DD1CE-6997F
     return self._ewf_handle.read(size)
 
   def get_size(self):
