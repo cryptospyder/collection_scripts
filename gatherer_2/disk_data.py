@@ -146,17 +146,19 @@ if not admin.isUserAdmin():
   admin.runAsAdmin()
   sys.exit()
 
-dirPath = args.path
-if not args.search == '.*':
-  print "Search Term Provided",args.search 
-outfile = open(args.output,'w')
-outfile.write('"Inode","Full Path","Creation Time","Modified Time", "Size","MD5 Hash","SHA1 Hash"\n')
-wr = csv.writer(outfile, quoting=csv.QUOTE_ALL)
-partitionList = psutil.disk_partitions()
-for partition in partitionList:
-  imagehandle = pytsk3.Img_Info('\\\\.\\'+partition.device.strip("\\"))
-  if 'NTFS' in partition.fstype:
-    filesystemObject = pytsk3.FS_Info(imagehandle)
-    directoryObject = filesystemObject.open_dir(path=dirPath)
-    print "Directory:",dirPath
-    directoryRecurse(directoryObject,[])
+
+if __name__ == "__main__":
+    dirPath = args.path
+    if not args.search == '.*':
+      print "Search Term Provided",args.search
+    outfile = open(args.output,'w')
+    outfile.write('"Inode","Full Path","Creation Time","Modified Time", "Size","MD5 Hash","SHA1 Hash"\n')
+    wr = csv.writer(outfile, quoting=csv.QUOTE_ALL)
+    partitionList = psutil.disk_partitions()
+    for partition in partitionList:
+      imagehandle = pytsk3.Img_Info('\\\\.\\'+partition.device.strip("\\"))
+      if 'NTFS' in partition.fstype:
+        filesystemObject = pytsk3.FS_Info(imagehandle)
+        directoryObject = filesystemObject.open_dir(path=dirPath)
+        print "Directory:",dirPath
+        directoryRecurse(directoryObject,[])
