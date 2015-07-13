@@ -160,5 +160,5 @@ if __name__ == "__main__":
       if 'NTFS' in partition.fstype:
         filesystemObject = pytsk3.FS_Info(imagehandle)
         directoryObject = filesystemObject.open_dir(path=dirPath)
-        print "Directory:",dirPath
+        #print "Directory:",dirPath
         directoryRecurse(directoryObject,[])

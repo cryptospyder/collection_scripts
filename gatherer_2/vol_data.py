@@ -22,3 +22,4 @@ def get_processes(output_file)
 if __name__ == "__main__":
     get_processes("processes.json")
 
+def get_network(output_file)
