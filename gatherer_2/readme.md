@@ -21,6 +21,8 @@ Gatherer will be extended to include the following collection capabilities:
 
  Usage
  -----
+
  gatherer.py <output directory>
+
  gatherer.exe <output directory>
 
