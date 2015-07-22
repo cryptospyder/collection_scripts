@@ -3,20 +3,25 @@ import datetime
 
 
 
-def collectFromDisk(imagefile,imagehandle,partitionTable,outputdir,hostname,files,directories):
+def collectFromDisk(imagefile,outputdir,hostname,files,directories):
+    imagehandle = pytsk3.Img_Info(imagefile)
+    partitionTable = pytsk3.Volume_Info(imagehandle)
     for partition in partitionTable:
       print partition.addr, partition.desc, "%ss(%s)" % (partition.start, partition.start * 512), partition.len
       if 'Basic' or 'NTFS' in partition.desc:
         try:
             for i in files:
+                path = i["path"]
                 try:
                     filesystemObject = pytsk3.FS_Info(imagehandle, offset=(partition.start*512))
-                    fileobject = filesystemObject.open(i)
+                    fileobject = filesystemObject.open(path)
+                    print path
                     print "File Inode:",fileobject.info.meta.addr
                     print "File Name:",fileobject.info.name.name
                     print "File Creation Time:",datetime.datetime.fromtimestamp(fileobject.info.meta.crtime).strftime('%Y-%m-%d %H:%M:%S')
-                    outFileName = hostname+"/"+str(partition.addr)+" "+fileobject.info.name.name
-                    print outFileName
+                    outFileName = outputdir+"/"+hostname+"/"+str(partition.addr)+" "+fileobject.info.name.name
+                    outdir = outputdir+"/"+hostname+"/"+entry["name"]
+                    if not os.path.exists(outdir): os.makedirs(outdir)
                     outfile = open(outFileName, 'w')
                     filedata = fileobject.read_random(0,fileobject.info.meta.size)
                     outfile.write(filedata)
@@ -35,16 +40,17 @@ def collectFromDisk(imagefile,imagehandle,partitionTable,outputdir,hostname,file
                             continue
 
                         filepath =(directory+"/"+entryObject.info.name.name)
-                        #print directory, entryObject.info.name.name
+                        print outputdir
+                        print directory, entryObject.info.name.name
                         #print filepath
 
                         fileobject = filesystemObject.open(filepath)
                         print "File Inode:",fileobject.info.meta.addr
                         print "File Name:",fileobject.info.name.name
                         print "File Creation Time:",datetime.datetime.fromtimestamp(fileobject.info.meta.crtime).strftime('%Y-%m-%d %H:%M:%S')
-                        outdir = hostname+"/"+entry["name"]
+                        outFileName = outputdir+"/"+hostname+"/"+str(partition.addr)+" "+fileobject.info.name.name
+                        outdir = outputdir+"/"+hostname+"/"+entry["name"]
                         if not os.path.exists(outdir): os.makedirs(outdir)
-                        outFileName = outdir+"/"+str(partition.addr)+" "+fileobject.info.name.name
                         print outFileName
                         outfile = open(outFileName, 'w')
                         filedata = fileobject.read_random(0,fileobject.info.meta.size)
@@ -53,8 +59,6 @@ def collectFromDisk(imagefile,imagehandle,partitionTable,outputdir,hostname,file
 
                 except:
                     pass
-
-
         except:
             pass
 
@@ -64,18 +68,21 @@ if __name__ == "__main__":
     from socket import gethostname
 
     imagefile = "\\\\.\\PhysicalDrive0"
-    imagehandle = pytsk3.Img_Info(imagefile)
-    partitionTable = pytsk3.Volume_Info(imagehandle)
     hostname = gethostname()
 
     if not os.path.exists(hostname): os.makedirs(hostname)
-    files = ["/Windows/System32/config/SYSTEM",
-             "/Windows/System32/config/software",
-             "/Windows/System32/config/SAM",
-             "/Windows/System32/config/security",
-             "/$MFT"]
 
-    directories = [{'name':"evtx",'path':"/Windows/System32/Winevt/logs"}]
-    outputdir =""
+    files = [
+             {"name":"Registry","path":"/Windows/System32/config/SYSTEM"},
+             {"name":"Registry","path":"/Windows/System32/config/software"},
+             {"name":"Registry","path":"/Windows/System32/config/SAM"},
+             {"name":"Registry","path":"/Windows/System32/config/security"},
+             {"name":"MFT","path":"/$MFT"}
+            ]
 
-    collectFromDisk(imagefile,imagehandle,partitionTable,outputdir,hostname,files,directories)
+    directories = [{'name':"evtx",'path':"/Windows/System32/Winevt/logs"},
+                   {'name':"evtx",'path':"/Windows/System32/Winevt/logs"}]
+
+    outputdir ="c:\\tools"
+
+    collectFromDisk(imagefile,outputdir,hostname,files,directories)
